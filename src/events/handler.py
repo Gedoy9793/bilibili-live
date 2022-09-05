@@ -1,6 +1,6 @@
 from src.events.danmu import Danmu
 
 
-class DanmuEventHandler:
+class BilibiliDanmuEventHandler:
     def onDanmu(self, data: Danmu):
         ...
