@@ -1,6 +1,15 @@
-from src.events.danmu import Danmu
+from events.eventData import Danmu, Gift
 
 
-class BilibiliDanmuEventHandler:
+class BilibiliLiveEventHandler:
     def onDanmu(self, data: Danmu):
+        ...
+
+    def onGift(self, data: Gift):
+        ...
+
+    def onSilverGift(self, data: Gift):
+        ...
+
+    def onGoldGift(self, data: Gift):
         ...

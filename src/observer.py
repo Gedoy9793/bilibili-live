@@ -1,16 +1,16 @@
 import asyncio
 import json
 import websockets
-from src.events.danmu import Danmu
+from events.eventData import Danmu, Gift
 
-from src.events.handler import DanmuEventHandler
+from src.events.handler import BilibiliLiveEventHandler
 from src.proto.proto import BilibiliProto, BilibiliProtoException
 from src.utils.danmuInfo import DanmuInfo
 from src.utils.roomInfo import RoomInfo
 
 class Observer:
     def schedule(self, handler, short_id):
-        self.handler: DanmuEventHandler = handler
+        self.handler: BilibiliLiveEventHandler = handler
 
         self.room_info = RoomInfo(short_id)
 
@@ -68,19 +68,7 @@ class Observer:
                     continue
                 elif package.cmd == "DANMU_MSG":
                     # 收到弹幕
-                    danmu = Danmu(
-                        uname=package.data[2][1],
-                        uid=package.data[2][0],
-                        uface="",
-                        timestamp=package.data[0][4] / 1000,
-                        room_id=self.room_info.room_id,
-                        msg=package.data[1],
-                        msg_id="",
-                        guard_level=0,
-                        fans_medal_wearing_status=bool(package.data[3]),
-                        fans_medal_name=package.data[3][1] if bool(package.data[3]) else "",
-                        fans_medal_level=package.data[3][0] if bool(package.data[3]) else -1
-                    )
+                    danmu = Danmu.load(package.data)
                     self.handler.onDanmu(danmu)
                 elif package.cmd == "ENTRY_EFFECT":
                     # 进入特效(舰长进入直播间)
@@ -99,7 +87,12 @@ class Observer:
                     continue
                 elif package.cmd == "SEND_GIFT":
                     # 发送礼物
-                    continue
+                    gift = Gift.load(package.data)
+                    self.handler.onGift(gift)
+                    if gift.coin_type == "gold":
+                        self.handler.onGoldGift(gift)
+                    elif gift.coin_type == "silver":
+                        self.handler.onSilverGift(gift)
                 elif package.cmd == "ROOM_REAL_TIME_MESSAGE_UPDATE":
                     # 房间实时信息更新(粉丝数)
                     continue
@@ -122,6 +115,10 @@ class Observer:
                     continue
                 elif package.cmd == "SUPER_CHAT_MESSAGE_JPN":
                     # 日语醒目留言
+                    continue
+                elif package.cmd == "HOT_ROOM_NOTIFY":
+                    continue
+                elif package.cmd == "COMMON_NOTICE_DANMAKU":
                     continue
                 else:
                     print(package)
