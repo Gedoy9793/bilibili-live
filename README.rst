@@ -1,4 +1,9 @@
-# bilibili-danmu
+哔哩哔哩直播间互动工具
+======================
 
-哔哩哔哩弹幕姬
+安装
+-----
 
+::
+
+    pip install bilibili-live
