@@ -1,0 +1,128 @@
+import asyncio
+import json
+import websockets
+from src.events.danmu import Danmu
+
+from src.events.handler import DanmuEventHandler
+from src.proto.proto import BilibiliProto, BilibiliProtoException
+from src.utils.danmuInfo import DanmuInfo
+from src.utils.roomInfo import RoomInfo
+
+class Observer:
+    def schedule(self, handler, short_id):
+        self.handler: DanmuEventHandler = handler
+
+        self.room_info = RoomInfo(short_id)
+
+        self.danmu_info = DanmuInfo(self.room_info.room_id)
+        self.host = self.danmu_info.host_list[0]
+
+    def start(self):
+        asyncio.get_event_loop().run_until_complete(self.start_asyncio())
+
+    async def start_asyncio(self):
+        self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
+        auth_proto = BilibiliProto()
+        auth_proto.body = json.dumps({
+            "uid": 0,
+            "roomid": self.room_info.room_id,
+            "protover": 3,
+            "platform": "web",
+            "type": 2,
+            "key": self.danmu_info.token
+        })
+        auth_proto.op = BilibiliProto.OP_AUTH
+        await self.websocket.send(auth_proto.pack())
+        await asyncio.wait([self._heart(), self._recv()])
+
+    async def _heart(self):
+        while True:
+            await self.websocket.send(BilibiliProto().pack())
+            await asyncio.sleep(30)
+
+    async def _recv(self):
+        while True:
+            recv = await self.websocket.recv()
+            try:
+                packages = BilibiliProto.unpack(recv)
+            except BilibiliProtoException as e:
+                print(e)
+                continue
+            for package in packages:
+                if package.cmd == "STOP_LIVE_ROOM_LIST":
+                    # 直播结束时显示的推荐房间列表
+                    continue
+                elif package.cmd == "OP_AUTH_REPLY":
+                    # wss连接鉴权通过
+                    continue
+                elif package.cmd == "OP_HEARTBEAT_REPLY":
+                    # 收到心跳包
+                    continue
+                elif package.cmd == "ONLINE_RANK_V2":
+                    # 高能榜数据
+                    continue
+                elif package.cmd == "ONLINE_RANK_COUNT":
+                    # 高能榜数据更新
+                    continue
+                elif package.cmd == "LIVE_INTERACTIVE_GAME":
+                    continue
+                elif package.cmd == "DANMU_MSG":
+                    # 收到弹幕
+                    danmu = Danmu(
+                        uname=package.data[2][1],
+                        uid=package.data[2][0],
+                        uface="",
+                        timestamp=package.data[0][4] / 1000,
+                        room_id=self.room_info.room_id,
+                        msg=package.data[1],
+                        msg_id="",
+                        guard_level=0,
+                        fans_medal_wearing_status=bool(package.data[3]),
+                        fans_medal_name=package.data[3][1] if bool(package.data[3]) else "",
+                        fans_medal_level=package.data[3][0] if bool(package.data[3]) else -1
+                    )
+                    self.handler.onDanmu(danmu)
+                elif package.cmd == "ENTRY_EFFECT":
+                    # 进入特效(舰长进入直播间)
+                    continue
+                elif package.cmd == "INTERACT_WORD":
+                    # 进入直播间
+                    continue
+                elif package.cmd == "WATCHED_CHANGE":
+                    # 观看人数更新
+                    continue
+                elif package.cmd == "HOT_RANK_CHANGED":
+                    # 主播实时活动排名
+                    continue
+                elif package.cmd == "HOT_RANK_CHANGED_V2":
+                    # 主播实时活动排名
+                    continue
+                elif package.cmd == "SEND_GIFT":
+                    # 发送礼物
+                    continue
+                elif package.cmd == "ROOM_REAL_TIME_MESSAGE_UPDATE":
+                    # 房间实时信息更新(粉丝数)
+                    continue
+                elif package.cmd == "WIDGET_BANNER":
+                    continue
+                elif package.cmd == "NOTICE_MSG":
+                    # 直播间通知
+                    continue
+                elif package.cmd == "ROOM_BLOCK_MSG":
+                    # 禁言
+                    continue
+                elif package.cmd == "PREPARING":
+                    # 下播
+                    continue
+                elif package.cmd == "LIVE":
+                    # 开播
+                    continue
+                elif package.cmd == "SUPER_CHAT_MESSAGE":
+                    # 醒目留言
+                    continue
+                elif package.cmd == "SUPER_CHAT_MESSAGE_JPN":
+                    # 日语醒目留言
+                    continue
+                else:
+                    print(package)
+                    
