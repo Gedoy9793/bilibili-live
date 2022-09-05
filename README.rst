@@ -4,6 +4,8 @@
 安装
 -----
 
+(暂未发布)
+
 ::
 
     pip install bilibili-live
@@ -36,7 +38,8 @@
 
     room_id = 2411716
     # 此处房间号为短号，即用户直接可见的房间号
-    observer = Observer(MyEventHandler(), room_id)
+    observer = Observer()
+    observer.schedule(MyEventHandler(), room_id)
     observer.start()
 
 
