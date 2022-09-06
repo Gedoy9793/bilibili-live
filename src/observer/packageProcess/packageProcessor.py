@@ -1,4 +1,5 @@
 from events.handler import BilibiliLiveEventHandler
+from utils.danmuInfo import DanmuInfo
 
 from .convert import (
     DANMU_MSG_to_Danmu,
@@ -11,14 +12,16 @@ from .exceptions import PackageConvertException
 
 
 class PackageProcessor:
-    def __init__(self, handler):
-        self.handler: BilibiliLiveEventHandler = handler
+    def __init__(self, handler: BilibiliLiveEventHandler, danmu_info: DanmuInfo):
+        self.handler = handler
+        self.danmu_info = danmu_info
 
     def process(self, package):
         # ====================心跳包===================
         if package.cmd == "OP_AUTH_REPLY":
             # wss连接鉴权通过
-            ...
+            self.handler.onAuth(self.danmu_info)
+
         elif package.cmd == "OP_HEARTBEAT_REPLY":
             # 收到心跳包
             ...

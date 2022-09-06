@@ -1,8 +1,12 @@
 from events.eventData import Danmu, Gift, SuperChat, User
 from proto.proto import BilibiliLivePackage, BilibiliProtoException
+from utils.danmuInfo import DanmuInfo
 
 
 class BilibiliLiveEventHandler:
+    def onAuth(self, data: DanmuInfo):
+        """校验已通过"""
+
     def onDanmu(self, data: Danmu):
         """收到弹幕事件"""
 
