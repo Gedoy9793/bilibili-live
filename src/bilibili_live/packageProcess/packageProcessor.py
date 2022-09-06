@@ -123,7 +123,7 @@ class PackageProcessor:
 
         elif package.cmd == "PREPARING":
             # 下播
-            ...
+            self.handler.onLiveEnd(Event(package))
 
         elif package.cmd == "LIVE":
             # 开播
