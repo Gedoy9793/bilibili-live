@@ -19,6 +19,7 @@ license = {text = "MIT"}
 [tool.pdm.dev-dependencies]
 dev = [
     "pre-commit>=2.20.0",
+    "twine>=4.0.1",
 ]
 
 [build-system]

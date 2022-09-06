@@ -113,11 +113,11 @@ class PackageProcessor:
 
         elif package.cmd == "PREPARING":
             # 下播
-            print(package)
+            ...
 
         elif package.cmd == "LIVE":
             # 开播
-            print(package)
+            ...
 
         # ===================全局消息====================
         elif package.cmd == "HOT_ROOM_NOTIFY":
@@ -131,5 +131,3 @@ class PackageProcessor:
             ...
         elif package.cmd == "LIVE_MULTI_VIEW_CHANGE":
             ...
-        else:
-            print(package)
