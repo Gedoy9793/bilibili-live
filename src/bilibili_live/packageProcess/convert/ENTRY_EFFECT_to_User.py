@@ -1,7 +1,6 @@
 import re
 
-from events.eventData import User
-
+from ...events.eventData import User
 from ..exceptions import PackageConvertException
 
 

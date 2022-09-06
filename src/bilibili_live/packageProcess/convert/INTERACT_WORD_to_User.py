@@ -1,4 +1,4 @@
-from events.eventData import FansMedal, User
+from ...events.eventData import FansMedal, User
 
 
 def convert(data):

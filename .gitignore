@@ -2,3 +2,4 @@
 .pdm.toml
 __pycache__
 .vscode
+dist
