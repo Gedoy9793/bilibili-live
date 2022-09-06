@@ -13,6 +13,8 @@ dependencies = [
 requires-python = ">=3.7"
 readme = "README.rst"
 license = {text = "MIT"}
+homepage = https://github.com/Gedoy9793/bilibili-live
+repository = https://github.com/Gedoy9793/bilibili-live
 [project.optional-dependencies]
 
 [tool.pdm]
