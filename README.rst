@@ -10,8 +10,6 @@
 安装
 -----
 
-(暂未发布)
-
 ::
 
     pip install bilibili-live
@@ -20,38 +18,35 @@
 使用
 -----
 
-首先创建事件处理器类，类需要继承BilibiliDanmuEventHandler类，并重写需要监听的事件方法：
+首先创建事件处理器类，类需要继承BilibiliLiveEventHandler类，并重写需要监听的事件方法：
 
 ::
 
-    class MyEventHandler(BilibiliDanmuEventHandler):
+    class MyEventHandler(BilibiliLiveEventHandler):
         def onDanmu(self, data: Danmu):
             # do something
             ...
 
-当前支持的事件列表如下：
-
-========== ============= ========
-事件       方法名         参数类型
-========== ============= ========
-弹幕       onDanmu        Danmu
-礼物       onGift         Gift
-银瓜子礼物  onSilverGift   Gift
-金瓜子礼物  onGoldGift     Gift
-========== ============= ========
+具体支持的事件可以参考BilibiliLiveEventHandler类
 
 
-完成后，创建Observer对象，并启动监听：
+完成后，创建BilibiliLive对象，并启动监听：
 
 ::
 
     room_id = 2411716
     # 此处房间号为短号，即用户直接可见的房间号
-    observer = Observer()
-    observer.schedule(MyEventHandler(), room_id)
-    observer.start()
+    bilibiliLive = BilibiliLive()
+    bilibiliLive.schedule(MyEventHandler(), room_id)
+    bilibiliLive.start()
+
+需要退出时，可使用stop方法停止：
+
+::
+
+    bilibiliLive.stop()
 
 
 此时即开启了事件循环。此函数为异步（非阻塞函数）。
 
-本模块基于asyncio设计，start函数为一个包装函数，其中实际启用了一个事件循环。如需要直接使用asyncio方式操作，可使用start_asyncio函数。
+本模块基于asyncio设计。start函数为一个包装函数，其中创建了一个线程并包装了协程操作。如需要直接使用asyncio方式操作，可使用start_asyncio函数。
