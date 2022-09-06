@@ -1,5 +1,10 @@
 # 哔哩哔哩直播间互动工具
 
+[![Author](https://img.shields.io/badge/Author-Gedoy-red.svg "Author")](https://github.com/Gedoy9793 "Author")
+[![LICENSE](https://img.shields.io/badge/license-MIT-green.svg "LICENSE")](./LICENSE "LICENSE")
+[![python](https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg "Python")](https://www.python.org/ "Python")
+
+
 ## 特色
 
 - 基于asyncio，可以满足更加丰富的使用场景
