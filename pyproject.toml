@@ -1,6 +1,6 @@
 [project]
 name = "bilibili-live"
-version = "0.1.1"
+version = "0.2.0"
 description = "哔哩哔哩直播间互动工具"
 authors = [
     {name = "Gedoy", email = "773673499@qq.com"},

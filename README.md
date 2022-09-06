@@ -4,6 +4,7 @@
 
 - 基于asyncio，可以满足更加丰富的使用场景
 - 基于bilibili三代协议，支持brotli压缩算法，效率更高
+- 事件钩子部分使用泛型，开发更友好
 
 ## 安装
 
@@ -11,16 +12,15 @@
 pip install bilibili-live
 ```
 
-
 ## 使用
 
 首先创建事件处理器类，类需要继承BilibiliLiveEventHandler类，并重写需要监听的事件方法：
 
 ``` python
-from bilibili_live.events import BilibiliLiveEventHandler, BilibiliLivePackage, Danmu
+from bilibili_live.events import BilibiliLiveEventHandler, Danmu, Event
 
 class MyEventHandler(BilibiliLiveEventHandler):
-    def onDanmu(self, package: BilibiliLivePackage, data: Danmu):
+    def onDanmu(self, event: Event[Danmu]):
         # do something
         ...
 ```
