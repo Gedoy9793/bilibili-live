@@ -1,12 +1,14 @@
 import asyncio
 import json
-from observer.packageProcess.packageProcessor import PackageProcessor
+
 import websockets
 
 from events.handler import BilibiliLiveEventHandler
+from observer.packageProcess.packageProcessor import PackageProcessor
 from proto.proto import BilibiliProto, BilibiliProtoException
 from utils.danmuInfo import DanmuInfo
 from utils.roomInfo import RoomInfo
+
 
 class Observer:
     def schedule(self, handler, short_id):
@@ -24,14 +26,16 @@ class Observer:
     async def start_asyncio(self):
         self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
         auth_proto = BilibiliProto()
-        auth_proto.body = json.dumps({
-            "uid": 0,
-            "roomid": self.room_info.room_id,
-            "protover": 3,
-            "platform": "web",
-            "type": 2,
-            "key": self.danmu_info.token
-        })
+        auth_proto.body = json.dumps(
+            {
+                "uid": 0,
+                "roomid": self.room_info.room_id,
+                "protover": 3,
+                "platform": "web",
+                "type": 2,
+                "key": self.danmu_info.token,
+            }
+        )
         auth_proto.op = BilibiliProto.OP_AUTH
         await self.websocket.send(auth_proto.pack())
         await asyncio.wait([self._heart(), self._recv()])
