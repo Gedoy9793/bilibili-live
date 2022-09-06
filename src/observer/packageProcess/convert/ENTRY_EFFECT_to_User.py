@@ -1,11 +1,13 @@
 import re
+
 from events.eventData import User
-from .exceptions import PackageConvertException
+
+from ..exceptions import PackageConvertException
 
 
 def convert(data):
     try:
-        matched = re.match(r'欢迎(舰长|提督|总督) <%(.*)%> 进入直播间', data.get('copy_writing')).groups()
+        matched = re.match(r"欢迎(舰长|提督|总督) <%(.*)%> 进入直播间", data.get("copy_writing")).groups()
     except AttributeError:
         raise PackageConvertException()
     if matched[0] == "舰长":
@@ -16,9 +18,4 @@ def convert(data):
         guard_level = 3
     else:
         raise PackageConvertException()
-    return User(
-        uid=data.get('uid'),
-        uface=data.get('face'),
-        uname=matched[1],
-        guard_level=guard_level
-    )
+    return User(uid=data.get("uid"), uface=data.get("face"), uname=matched[1], guard_level=guard_level)

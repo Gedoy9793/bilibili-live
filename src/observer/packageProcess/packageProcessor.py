@@ -1,13 +1,21 @@
 from events.handler import BilibiliLiveEventHandler
+
+from .convert import (
+    DANMU_MSG_to_Danmu,
+    ENTRY_EFFECT_to_User,
+    INTERACT_WORD_to_User,
+    SEND_GIFT_to_Gift,
+    SUPER_CHAT_MESSAGE_JPN_to_SuperChat,
+)
 from .exceptions import PackageConvertException
-from . import DANMU_MSG_to_Danmu, SEND_GIFT_to_Gift, INTERACT_WORD_to_User, ENTRY_EFFECT_to_User, SUPER_CHAT_MESSAGE_JPN_to_SuperChat
+
 
 class PackageProcessor:
     def __init__(self, handler):
         self.handler: BilibiliLiveEventHandler = handler
 
     def process(self, package):
-# ====================心跳包===================
+        # ====================心跳包===================
         if package.cmd == "OP_AUTH_REPLY":
             # wss连接鉴权通过
             ...
@@ -15,7 +23,7 @@ class PackageProcessor:
             # 收到心跳包
             ...
 
-# ====================打榜相关=================
+        # ====================打榜相关=================
         elif package.cmd == "STOP_LIVE_ROOM_LIST":
             # 直播结束时显示的推荐房间列表
             ...
@@ -36,7 +44,7 @@ class PackageProcessor:
         elif package.cmd == "HOT_RANK_SETTLEMENT_V2":
             ...
 
-# ================基础互动消息===================
+        # ================基础互动消息===================
         elif package.cmd == "DANMU_MSG":
             # 收到弹幕
             danmu = DANMU_MSG_to_Danmu.convert(package.data)
@@ -83,7 +91,7 @@ class PackageProcessor:
             except PackageConvertException:
                 print(package)
 
-# =====================直播间状态消息==================
+        # =====================直播间状态消息==================
         elif package.cmd == "WATCHED_CHANGE":
             # 观看人数更新
             ...
@@ -104,7 +112,7 @@ class PackageProcessor:
             # 开播
             print(package)
 
-# ===================全局消息====================
+        # ===================全局消息====================
         elif package.cmd == "HOT_ROOM_NOTIFY":
             ...
         elif package.cmd == "NOTICE_MSG":
@@ -117,4 +125,3 @@ class PackageProcessor:
 
         else:
             print(package)
-            

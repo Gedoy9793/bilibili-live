@@ -1,5 +1,5 @@
 from events.eventData import Danmu, Gift, SuperChat, User
-from proto.proto import BilibiliProtoException
+from proto.proto import BilibiliLivePackage, BilibiliProtoException
 
 
 class BilibiliLiveEventHandler:
@@ -26,3 +26,6 @@ class BilibiliLiveEventHandler:
 
     def onUnpackExceprion(self, exception: BilibiliProtoException):
         """解包消息过程出现异常"""
+
+    def onNotProcessPackage(self, package: BilibiliLivePackage):
+        """未处理的包"""
