@@ -28,7 +28,6 @@ class BilibiliProto:
         self.op = self.OP_HEARTBEAT
         self.seq = 1
         self.body = ""
-        self.maxBody = 4096
 
     def pack(self):
         self.packetLen = len(self.body) + self.headerLen
@@ -54,8 +53,8 @@ class BilibiliProto:
         self.ver = struct.unpack(">h", buf[6:8])[0]
         self.op = struct.unpack(">i", buf[8:12])[0]
         self.seq = struct.unpack(">i", buf[12:16])[0]
-        if self.packetLen < 0 or self.packetLen > self.maxBody:
-            raise BilibiliProtoException("包体长不对", "self.packetLen:", self.packetLen, " self.maxBody:", self.maxBody)
+        if self.packetLen < 0:
+            raise BilibiliProtoException("包体长不对", "self.packetLen:", self.packetLen)
         bodyLen = self.packetLen - self.headerLen
         if bodyLen <= 0:
             return

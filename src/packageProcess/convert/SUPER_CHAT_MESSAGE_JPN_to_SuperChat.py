@@ -9,7 +9,9 @@ def convert(data):
             uface=data.get("user_info").get("face"),
             fans_medal=FansMedal(
                 name=data.get("medal_info").get("medal_name"), level=data.get("medal_info").get("medal_level")
-            ),
+            )
+            if data.get("medal_info")
+            else None,
             guard_level=data.get("user_info").get("guard_level"),
         ),
         timestamp=data.get("start_time"),
