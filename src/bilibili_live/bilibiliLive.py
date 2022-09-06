@@ -4,6 +4,7 @@ from threading import Thread
 
 import websockets
 
+from .events import Event
 from .events.handler import BilibiliLiveEventHandler
 from .packageProcess.exceptions import PackageConvertException
 from .packageProcess.packageProcessor import PackageProcessor
@@ -79,9 +80,9 @@ class BilibiliLive:
                     self.processor.process(package)
             except BilibiliProtoException as e:
                 self.handler.onException(e)
-                self.handler.onUnpackExceprion(package, e)
+                self.handler.onUnpackExceprion(Event(package, data=e))
             except PackageConvertException as e:
-                self.handler.onUnpackExceprion(package, e)
+                self.handler.onUnpackExceprion(Event(package, data=e))
             except Exception as e:
                 self.handler.onException(e)
                 ...

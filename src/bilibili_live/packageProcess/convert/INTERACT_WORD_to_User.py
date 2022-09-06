@@ -11,4 +11,4 @@ def convert(data):
         if data.get("medal_info")
         else None,
         guard_level=0,
-    )
+    ), data.get("timestamp")

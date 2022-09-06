@@ -3,7 +3,6 @@ from ...events.eventData import FansMedal, Gift, User
 
 def convert(data):
     return Gift(
-        timestamp=data.get("timestamp"),
         user=User(
             uid=data.get("uid"),
             uname=data.get("uname"),
@@ -20,4 +19,4 @@ def convert(data):
         gift_num=data.get("num"),
         price=data.get("price"),
         coin_type=data.get("coin_type"),
-    )
+    ), data.get("timestamp")

@@ -1,9 +1,17 @@
 from dataclasses import dataclass
+from time import time
+from typing import Generic, TypeVar
+
+from ..proto.proto import BilibiliLivePackage
+
+EventData = TypeVar("EventData")
 
 
 @dataclass
-class BaseData:
-    timestamp: int
+class Event(Generic[EventData]):
+    package: BilibiliLivePackage
+    data: EventData = None
+    timestamp: int = int(time())
 
 
 @dataclass
@@ -22,14 +30,14 @@ class User:
 
 
 @dataclass
-class Danmu(BaseData):
+class Danmu:
     # 用户名
     user: User
     msg: str
 
 
 @dataclass
-class Gift(BaseData):
+class Gift:
     user: User
     gift_id: int
     gift_name: str
@@ -39,7 +47,7 @@ class Gift(BaseData):
 
 
 @dataclass
-class SuperChat(BaseData):
+class SuperChat:
     user: User
     msg_id: int
     msg: str

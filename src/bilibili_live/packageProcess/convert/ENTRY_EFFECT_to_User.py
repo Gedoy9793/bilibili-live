@@ -19,4 +19,6 @@ def convert(data):
         guard_level = 0
     else:
         raise PackageConvertException()
-    return User(uid=data.get("uid"), uface=data.get("face"), uname=matched[1], guard_level=guard_level)
+    return User(uid=data.get("uid"), uface=data.get("face"), uname=matched[1], guard_level=guard_level), int(
+        data.get("trigger_time") / 1e9
+    )
