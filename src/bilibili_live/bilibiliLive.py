@@ -4,13 +4,13 @@ from threading import Thread
 
 import websockets
 
+from bilibili_live import api
+
 from .events import Event
 from .events.handler import BilibiliLiveEventHandler
 from .packageProcess.exceptions import PackageConvertException
 from .packageProcess.packageProcessor import PackageProcessor
 from .proto.proto import BilibiliProto, BilibiliProtoException
-from .utils.danmuInfo import DanmuInfo
-from .utils.roomInfo import RoomInfo
 
 
 class BilibiliLive:
@@ -18,8 +18,8 @@ class BilibiliLive:
         self.handler: BilibiliLiveEventHandler = handler(self)
         self.processor: PackageProcessor = PackageProcessor(self.handler)
 
-        self.room_info = RoomInfo(short_id)
-        self.danmu_info = DanmuInfo(self.room_info.room_id)
+        self.room_info = api.getRoomInfo(short_id)
+        self.danmu_info = api.getDanmuServerInfo(self.room_info.room_id)
         self.host = self.danmu_info.host_list[0]
 
     def start(self):

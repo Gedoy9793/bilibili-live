@@ -12,6 +12,9 @@ class BilibiliLiveEventHandler:
     def onAuth(self, event: Event[None]):
         """校验已通过"""
 
+    def onLiveEnd(self, event: Event[None]):
+        """直播结束"""
+
     def onDanmu(self, event: Event[Danmu]):
         """收到弹幕事件"""
 
