@@ -121,6 +121,9 @@ class PackageProcessor:
             # 观看人数更新
             ...
 
+        elif package.cmd == "LIKE_INFO_V3_UPDAT":
+            ...
+
         elif package.cmd == "ROOM_REAL_TIME_MESSAGE_UPDATE":
             # 房间实时信息更新(粉丝数)
             ...
@@ -135,12 +138,13 @@ class PackageProcessor:
 
         elif package.cmd == "LIVE":
             # 开播 {'cmd': 'LIVE', 'live_key': '276197252200243670', 'voice_background': '', 'sub_session_key': '276197252200243670sub_time:1662465528', 'live_platform': 'pc', 'live_model': 0, 'roomid': 22389206}
-            print(package)
+            # TODO
             ...
 
         elif package.cmd == "ROOM_CHANGE":
             # 房间信息变化，示例：{'title': '和小小约联动我爱记歌词~', 'area_id': 371, 'parent_area_id': 9, 'area_name': '虚拟主播', 'parent_area_name': '虚拟主播', 'live_key': '0', 'sub_session_key': ''}
-            print(package)
+            # TODO
+            ...
 
         elif package.cmd == "POPULARITY_RED_POCKET_NEW":
             # 红包 {'lot_id': 5742069, 'start_time': 1662465687, 'current_time': 1662465687, 'wait_num': 0, 'uname': 'ルキロキ视频存放处', 'uid': 2357943, 'action': '送出', 'num': 1, 'gift_name': '红包', 'gift_id': 13000, 'price': 100, 'name_color': '', 'medal_info': {'target_id': 1359949418, 'special': '', 'icon_id': 0, 'anchor_uname': '', 'anchor_roomid': 0, 'medal_level': 26, 'medal_name': '口袋蛋', 'medal_color': 398668, 'medal_color_start': 398668, 'medal_color_end': 6850801, 'medal_color_border': 6809855, 'is_lighted': 1, 'guard_level': 3}}
@@ -167,4 +171,4 @@ class PackageProcessor:
         elif package.cmd == "LIVE_MULTI_VIEW_CHANGE":
             ...
         else:
-            print(package)
+            ...
