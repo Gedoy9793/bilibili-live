@@ -16,6 +16,8 @@ _bilibiliLive = {}
 
 class BilibiliLive:
     connected: asyncio.Event
+    loop: asyncio.AbstractEventLoop
+    main_task: asyncio.Task
 
     def __new__(cls, name='defaule'):
         if name in _bilibiliLive:
@@ -26,19 +28,18 @@ class BilibiliLive:
             return obj
 
     def __init__(self):
-        self.main_task: asyncio.Task = None
-        self.loop = asyncio.new_event_loop()
-        self.connected = asyncio.Event(loop=self.loop)
-
         def live_thread():
+            self.loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self.loop)
             async def main():
+                self.connected = asyncio.Event(loop=self.loop)
                 self.main_task = asyncio.create_task(self._start())
                 await self.main_task
 
             self.loop.run_until_complete(main())
             if self.main_task._exception is not None:
                 self.handler.onException(self.main_task._exception)
+                raise self.main_task._exception
 
         self.thread = Thread(target=live_thread)
         self.thread.setDaemon(True)
@@ -61,11 +62,6 @@ class BilibiliLive:
     async def _start(self):
         await self._connect()
         await asyncio.wait([self._heart(), self._recv()])
-
-    # async def connect(self):
-    #     self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
-    #     await self._auth()
-    #     await asyncio.wait([self._heart(), self._recv()])
 
     async def _connect(self):
         while True:

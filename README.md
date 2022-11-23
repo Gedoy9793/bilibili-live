@@ -41,7 +41,7 @@ from bilibili_live import BilibiliLive
 room_id = 2411716
 # 此处房间号为短号，即用户直接可见的房间号
 bilibiliLive = BilibiliLive()
-bilibiliLive.schedule(MyEventHandler(), room_id)
+bilibiliLive.schedule(MyEventHandler, room_id)
 bilibiliLive.start()
 ```
 
