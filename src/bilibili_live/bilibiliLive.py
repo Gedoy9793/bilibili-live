@@ -1,4 +1,6 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 import json
 from threading import Thread
 
@@ -16,8 +18,8 @@ _bilibiliLive = {}
 
 class BilibiliLive:
     connected: asyncio.Event
-    loop: asyncio.AbstractEventLoop
-    main_task: asyncio.Task
+    stop_sig: asyncio.Event
+    # main_task: asyncio.Task
 
     def __new__(cls, name='defaule'):
         if name in _bilibiliLive:
@@ -28,18 +30,13 @@ class BilibiliLive:
             return obj
 
     def __init__(self):
+
         def live_thread():
             self.loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self.loop)
-            async def main():
-                self.connected = asyncio.Event(loop=self.loop)
-                self.main_task = asyncio.create_task(self._start())
-                await self.main_task
-
-            self.loop.run_until_complete(main())
-            if self.main_task._exception is not None:
-                self.handler.onException(self.main_task._exception)
-                raise self.main_task._exception
+            # asyncio.set_event_loop(loop)
+            self.connected = asyncio.Event(loop=self.loop)
+            self.stop_sig = asyncio.Event(loop=self.loop)        
+            self.loop.run_until_complete(self._start())
 
         self.thread = Thread(target=live_thread)
         self.thread.setDaemon(True)
@@ -55,13 +52,18 @@ class BilibiliLive:
     def start(self):
         self.thread.start()
         return self.thread
+        # with ThreadPoolExecutor(2) as t:
+        #     self.loop.run_in_executor(t, partial(self.loop.run_until_complete, self._start()))
 
     def stop(self):
-        self.main_task.cancel()
+        self.stop_sig.set()
+
+    async def _check_stop(self):
+        await self.stop_sig.wait()
 
     async def _start(self):
         await self._connect()
-        await asyncio.wait([self._heart(), self._recv()])
+        await asyncio.wait([self._heart(), self._recv(), self._check_stop()], return_when=asyncio.FIRST_COMPLETED)
 
     async def _connect(self):
         while True:
@@ -74,6 +76,7 @@ class BilibiliLive:
                 await asyncio.sleep(1)
 
     async def _auth(self):
+        print("auth: loopid:", id(asyncio.get_event_loop()))
         auth_proto = BilibiliProto()
         auth_proto.body = json.dumps(
             {
