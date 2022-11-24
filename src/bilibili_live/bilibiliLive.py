@@ -1,7 +1,6 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 import json
+from queue import Queue
 from threading import Thread
 
 import websockets
@@ -19,7 +18,8 @@ _bilibiliLive = {}
 class BilibiliLive:
     connected: asyncio.Event
     stop_sig: asyncio.Event
-    # main_task: asyncio.Task
+
+    package_queue: Queue
 
     def __new__(cls, name='defaule'):
         if name in _bilibiliLive:
@@ -30,16 +30,26 @@ class BilibiliLive:
             return obj
 
     def __init__(self):
+        def live_thread_run():
+            def handle_thread_run():
+                while True:
+                    package = self.package_queue.get()
+                    self.handler.onPackage(package)
+                    self.processor.process(package)
 
-        def live_thread():
+            handle_thread = Thread(target=handle_thread_run)
+            handle_thread.setDaemon(True)
+
             self.loop = asyncio.new_event_loop()
-            # asyncio.set_event_loop(loop)
             self.connected = asyncio.Event(loop=self.loop)
-            self.stop_sig = asyncio.Event(loop=self.loop)        
+            self.stop_sig = asyncio.Event(loop=self.loop)
+            self.package_queue = Queue()
+            
+            handle_thread.start()
             self.loop.run_until_complete(self._start())
 
-        self.thread = Thread(target=live_thread)
-        self.thread.setDaemon(True)
+        self.live_thread = Thread(target=live_thread_run)
+        self.live_thread.setDaemon(True)
 
     def schedule(self, handler, short_id):
         self.handler: BilibiliLiveEventHandler = handler(self)
@@ -50,10 +60,8 @@ class BilibiliLive:
         self.host = self.danmu_info.host_list[0]
 
     def start(self):
-        self.thread.start()
-        return self.thread
-        # with ThreadPoolExecutor(2) as t:
-        #     self.loop.run_in_executor(t, partial(self.loop.run_until_complete, self._start()))
+        self.live_thread.start()
+        return self.live_thread
 
     def stop(self):
         self.stop_sig.set()
@@ -76,7 +84,6 @@ class BilibiliLive:
                 await asyncio.sleep(1)
 
     async def _auth(self):
-        print("auth: loopid:", id(asyncio.get_event_loop()))
         auth_proto = BilibiliProto()
         auth_proto.body = json.dumps(
             {
@@ -106,8 +113,7 @@ class BilibiliLive:
                 recv = await self.websocket.recv()
                 packages = BilibiliProto.unpack(recv)
                 for package in packages:
-                    self.handler.onPackage(package)
-                    self.processor.process(package)
+                    self.package_queue.put(package)
             except websockets.exceptions.ConnectionClosedError:
                 self.connected.clear()
                 await self._connect()
