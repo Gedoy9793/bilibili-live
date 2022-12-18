@@ -34,8 +34,11 @@ class BilibiliLive:
             def handle_thread_run():
                 while True:
                     package = self.package_queue.get()
-                    self.handler.onPackage(package)
-                    self.processor.process(package)
+                    try:
+                        self.handler.onPackage(package)
+                        self.processor.process(package)
+                    except Exception as e:
+                        self.handler.onException(e)
 
             handle_thread = Thread(target=handle_thread_run)
             handle_thread.setDaemon(True)
