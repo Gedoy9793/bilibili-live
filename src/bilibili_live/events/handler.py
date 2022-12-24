@@ -6,6 +6,12 @@ class BilibiliLiveEventHandler:
     def __init__(self, observer):
         self.observer = observer
 
+    def onHeart(self):
+        """发出心跳包"""
+
+    def onHeartRecv(self):
+        """收到心跳包"""
+
     def onPackage(self, event: Event[None]):
         """收到任意包"""
 

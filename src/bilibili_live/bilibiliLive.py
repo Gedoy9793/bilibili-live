@@ -54,13 +54,15 @@ class BilibiliLive:
         self.live_thread = Thread(target=live_thread_run)
         self.live_thread.setDaemon(True)
 
-    def schedule(self, handler, short_id):
+    def schedule(self, handler, short_id, heart_time = 30):
         self.handler: BilibiliLiveEventHandler = handler(self)
         self.processor: PackageProcessor = PackageProcessor(self.handler)
 
         self.room_info = api.getRoomInfo(short_id)
         self.danmu_info = api.getDanmuServerInfo(self.room_info.room_id)
         self.host = self.danmu_info.host_list[0]
+
+        self.heart_time = heart_time
 
     def start(self):
         self.live_thread.start()
@@ -105,7 +107,8 @@ class BilibiliLive:
         while True:
             try:
                 await self.websocket.send(BilibiliProto().pack())
-                await asyncio.sleep(30)
+                self.handler.onHeart()
+                await asyncio.sleep(self.heart_time)
             except Exception as e:
                 self.handler.onException(e)
 
