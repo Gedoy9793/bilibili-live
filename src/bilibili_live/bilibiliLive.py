@@ -37,6 +37,9 @@ class BilibiliLive:
                     try:
                         self.handler.onPackage(package)
                         self.processor.process(package)
+                    except BilibiliProtoException as e:
+                        self.handler.onUnpackException(Event(package=package, data=e))
+                        self.handler.onException(e)
                     except Exception as e:
                         self.handler.onException(e)
 
@@ -125,9 +128,9 @@ class BilibiliLive:
                 await self._connect()
             except BilibiliProtoException as e:
                 self.handler.onException(e)
-                self.handler.onUnpackExceprion(Event(package, data=e))
+                self.handler.onUnpackException(Event(package, data=e))
             except PackageConvertException as e:
-                self.handler.onUnpackExceprion(Event(package, data=e))
+                self.handler.onUnpackException(Event(package, data=e))
             except Exception as e:
                 self.handler.onException(e)
                 ...

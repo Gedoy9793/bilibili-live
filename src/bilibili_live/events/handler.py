@@ -9,7 +9,7 @@ class BilibiliLiveEventHandler:
     def onHeart(self):
         """发出心跳包"""
 
-    def onHeartRecv(self):
+    def onHeartRecv(self, event: Event[None]):
         """收到心跳包"""
 
     def onPackage(self, event: Event[None]):
@@ -51,7 +51,7 @@ class BilibiliLiveEventHandler:
     def onSuperChat(self, event: Event[SuperChat]):
         """收到醒目留言，包括日语留言"""
 
-    def onUnpackExceprion(self, event: Event[BilibiliProtoException]):
+    def onUnpackException(self, event: Event[BilibiliProtoException]):
         """解包消息过程出现异常"""
 
     def onException(self, exception: Exception):

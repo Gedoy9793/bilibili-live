@@ -11,15 +11,21 @@ EventData = TypeVar("EventData")
 
 @dataclass
 class Event(Generic[EventData]):
+    def __post_init__(self):
+        if self.timestamp == None:
+            self.timestamp = int(time())
+
     package: BilibiliLivePackage
     data: EventData = None
-    timestamp: int = int(time())
+    timestamp: int = None
 
 
 @dataclass
 class FansMedal:
     name: str
     level: int
+    target_uid: int
+    guard_level: int
 
 
 @dataclass

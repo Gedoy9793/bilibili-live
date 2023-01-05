@@ -10,11 +10,11 @@ def convert(data):
     except AttributeError:
         raise PackageConvertException()
     if matched[0] == "舰长":
-        guard_level = 1
+        guard_level = 3
     elif matched[0] == "提督":
         guard_level = 2
     elif matched[0] == "总督":
-        guard_level = 3
+        guard_level = 1
     elif matched[0] == "":
         guard_level = 0
     else:
