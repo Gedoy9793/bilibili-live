@@ -23,7 +23,7 @@ class PackageProcessor:
 
         elif package.cmd == "OP_HEARTBEAT_REPLY":
             # 收到心跳包
-            self.handler.onHeartRecv()
+            self.handler.onHeartRecv(Event(package))
 
         # ====================打榜相关=================
         elif package.cmd == "STOP_LIVE_ROOM_LIST":
