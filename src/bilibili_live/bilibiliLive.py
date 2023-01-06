@@ -35,7 +35,7 @@ class BilibiliLive:
                 while True:
                     package = self.package_queue.get()
                     try:
-                        self.handler.onPackage(package)
+                        self.handler.onPackage(Event(package=package))
                         self.processor.process(package)
                     except BilibiliProtoException as e:
                         self.handler.onUnpackException(Event(package=package, data=e))
