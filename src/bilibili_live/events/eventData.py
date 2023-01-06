@@ -24,6 +24,7 @@ class Event(Generic[EventData]):
 class FansMedal:
     name: str
     level: int
+    target_live_id: int
     target_uid: int
     guard_level: int
 

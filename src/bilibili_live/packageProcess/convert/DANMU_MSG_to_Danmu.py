@@ -11,7 +11,8 @@ def convert(data) -> Tuple[User, int]:
             fans_medal=FansMedal(
                 name=data[3][1], 
                 level=data[3][0], 
-                target_uid=data[3][3], 
+                target_live_id=data[3][3],
+                target_uid=data[3][12],
                 guard_level=data[3][10]
             ) if bool(data[3]) else None
         ),
