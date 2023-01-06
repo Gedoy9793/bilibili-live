@@ -9,6 +9,7 @@ def convert(data):
             name=data.get("fans_medal").get("medal_name"), 
             level=data.get("fans_medal").get("medal_level"),
             target_uid=data.get("fans_medal").get("target_id"),
+            target_live_id=data.get("fans_medal").get("anchor_roomid"),
             guard_level=data.get("fans_medal").get("guard_level")
         )
         if data.get("medal_info")
