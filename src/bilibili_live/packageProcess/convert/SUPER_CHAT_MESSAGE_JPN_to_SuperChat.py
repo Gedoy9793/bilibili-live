@@ -11,6 +11,7 @@ def convert(data):
                 name=data.get("medal_info").get("medal_name"), 
                 level=data.get("medal_info").get("medal_level"),
                 target_uid=data.get("medal_info").get("target_id"),
+                target_live_id=data.get("medal_info").get("anchor_roomid"),
                 guard_level=data.get("medal_info").get("guard_level")
             )
             if data.get("medal_info")
