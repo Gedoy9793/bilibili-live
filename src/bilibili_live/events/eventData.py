@@ -2,21 +2,27 @@ import json
 from dataclasses import dataclass
 from enum import IntEnum
 from time import time
-from typing import Dict, Generic, List, Optional, TypeVar
+from types import TracebackType
+from typing import Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
+
+from typing_extensions import TypeAlias
 
 from ..proto.proto import BilibiliLivePackage
 
-EventData = TypeVar("EventData")
+_EventData = TypeVar("_EventData")
+
+_ExcInfo: TypeAlias = Tuple[Type[BaseException], BaseException, TracebackType]
+OptExcInfo: TypeAlias = Union[_ExcInfo, Tuple[None, None, None]]
 
 
 @dataclass
-class Event(Generic[EventData]):
+class Event(Generic[_EventData]):
     def __post_init__(self):
         if self.timestamp is None:
             self.timestamp = int(time())
 
     package: BilibiliLivePackage
-    data: EventData = None
+    data: _EventData = None
     timestamp: int = None
 
 
