@@ -55,7 +55,7 @@ class BilibiliLiveEventHandler:
         """解包消息过程出现异常"""
 
     def onException(self, exception: Exception):
-        """出现异常"""
+        """出现异常。其他事件或内部抛出异常将触发，此方法抛出异常将被忽略"""
 
     def onNotProcessPackage(self, event: Event[None]):
         """未处理的包"""
