@@ -12,7 +12,7 @@ EventData = TypeVar("EventData")
 @dataclass
 class Event(Generic[EventData]):
     def __post_init__(self):
-        if self.timestamp == None:
+        if self.timestamp is None:
             self.timestamp = int(time())
 
     package: BilibiliLivePackage
@@ -94,6 +94,7 @@ class HostInfo:
     port: int
     wss_port: int
     ws_port: int
+    score: int = 100
 
 
 @dataclass

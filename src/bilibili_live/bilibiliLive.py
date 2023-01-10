@@ -102,6 +102,7 @@ class BilibiliLive:
                 await asyncio.sleep(1)
                 continue
             try:
+                self.host = api.getBestHost(self.danmu_info.host_list)
                 self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
                 await self._auth()
                 self.connected.set()
@@ -132,6 +133,7 @@ class BilibiliLive:
                 await asyncio.sleep(self.heart_time)
             except websockets.exceptions.ConnectionClosedError as e:
                 self.package_queue.put(e)
+                api.decuteHostScore(self.host)
                 await asyncio.sleep(1)
                 self.connected.clear()
             except Exception as e:
@@ -147,6 +149,7 @@ class BilibiliLive:
                     self.package_queue.put(package)
             except websockets.exceptions.ConnectionClosedError as e:
                 self.package_queue.put(e)
+                api.decuteHostScore(self.host)
                 self.connected.clear()
             except BilibiliProtoException as e:
                 self.package_queue.put(Event(package, data=e))
