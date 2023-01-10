@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sys
 from queue import Queue
 from threading import Thread
 
@@ -7,13 +8,17 @@ import websockets
 
 from bilibili_live import api
 
-from .events import Event
+from .events import Event, OptExcInfo
 from .events.handler import BilibiliLiveEventHandler
 from .packageProcess.exceptions import PackageConvertException
 from .packageProcess.packageProcessor import PackageProcessor
 from .proto.proto import BilibiliLivePackage, BilibiliProto, BilibiliProtoException
 
 _bilibiliLive = {}
+
+import logging
+
+logger = logging.getLogger("bilibili-live")
 
 
 class BilibiliLive:
@@ -40,19 +45,19 @@ class BilibiliLive:
                             try:
                                 self.handler.onPackage(Event(package=package))
                                 self.processor.process(package)
-                            except BilibiliProtoException as e:
-                                self.package_queue.put(Event(package=package, data=e))
-                            except Exception as e:
-                                self.package_queue.put(e)
+                            except BilibiliProtoException:
+                                self.package_queue.put(Event(package=package, data=sys.exc_info()))
+                            except Exception:
+                                self.package_queue.put(sys.exc_info())
                         elif isinstance(package, Event):
                             self.handler.onUnpackException(package)
                         elif package == "heart":
                             self.handler.onHeart()
-                    except Exception as e:
-                        self.package_queue.put(e)
+                    except Exception:
+                        self.package_queue.put(sys.exc_info())
 
                     try:
-                        if isinstance(package, Exception):
+                        if isinstance(package, OptExcInfo):
                             self.handler.onException(package)
                     except Exception:
                         ...
@@ -102,10 +107,15 @@ class BilibiliLive:
                 await asyncio.sleep(1)
                 continue
             try:
+                self.host = api.getBestHost(self.danmu_info.host_list)
+                logger.info(f"connecting to {self.host}")
                 self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
                 await self._auth()
                 self.connected.set()
+                logger.info(f"connected to {self.host}")
             except ConnectionRefusedError:
+                api.decuteHostScore(self.host)
+                logger.error("connection refused, reconnecting")
                 await asyncio.sleep(1)
 
     async def _auth(self):
@@ -122,20 +132,23 @@ class BilibiliLive:
         )
         auth_proto.op = BilibiliProto.OP_AUTH
         await self.websocket.send(auth_proto.pack())
+        logger.info("send auth package")
 
     async def _heart(self):
         while True:
             try:
                 await self.connected.wait()
                 await self.websocket.send(BilibiliProto().pack())
+                logger.info("send heart package")
                 self.package_queue.put("heart")
                 await asyncio.sleep(self.heart_time)
-            except websockets.exceptions.ConnectionClosedError as e:
-                self.package_queue.put(e)
+            except websockets.exceptions.ConnectionClosedError:
+                logger.error("connection closed at heart, reconnecting")
+                api.decuteHostScore(self.host)
                 await asyncio.sleep(1)
                 self.connected.clear()
-            except Exception as e:
-                self.package_queue.put(e)
+            except Exception:
+                self.package_queue.put(sys.exc_info())
 
     async def _recv(self):
         while True:
@@ -145,13 +158,14 @@ class BilibiliLive:
                 packages = BilibiliProto.unpack(recv)
                 for package in packages:
                     self.package_queue.put(package)
-            except websockets.exceptions.ConnectionClosedError as e:
-                self.package_queue.put(e)
+            except websockets.exceptions.ConnectionClosedError:
+                api.decuteHostScore(self.host)
                 self.connected.clear()
-            except BilibiliProtoException as e:
-                self.package_queue.put(Event(package, data=e))
-            except PackageConvertException as e:
-                self.package_queue.put(Event(package, data=e))
-            except Exception as e:
-                self.package_queue.put(e)
+                logger.error("connection closed at recv, reconnecting")
+            except BilibiliProtoException:
+                self.package_queue.put(Event(package, data=sys.exc_info()))
+            except PackageConvertException:
+                self.package_queue.put(Event(package, data=sys.exc_info()))
+            except Exception:
+                self.package_queue.put(sys.exc_info())
                 ...

@@ -1,6 +1,6 @@
-from ..proto.proto import BilibiliLivePackage
-from .eventData import Danmu, Event, Gift, SuperChat, User
-from .handler import BilibiliLiveEventHandler, BilibiliProtoException
+from ..proto.proto import BilibiliLivePackage, BilibiliProtoException
+from .eventData import Danmu, Event, Gift, OptExcInfo, SuperChat, User
+from .handler import BilibiliLiveEventHandler
 
 __all__ = [
     "BilibiliLiveEventHandler",
@@ -11,4 +11,5 @@ __all__ = [
     "SuperChat",
     "Gift",
     "Danmu",
+    "OptExcInfo",
 ]

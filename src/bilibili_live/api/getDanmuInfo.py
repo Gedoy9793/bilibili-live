@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 import requests
 
@@ -17,3 +18,11 @@ def getDanmuServerInfo(room_id: int):
         host_list.append(HostInfo(**host))
 
     return DanmuServerInfo(token=data.get("data").get("token"), host_list=host_list)
+
+
+def getBestHost(host_list: List[HostInfo]):
+    return sorted(host_list, key=lambda host: host.score)[0]
+
+
+def decuteHostScore(host: HostInfo):
+    host.score -= 1

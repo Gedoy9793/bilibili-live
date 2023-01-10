@@ -1,5 +1,4 @@
-from ..proto.proto import BilibiliProtoException
-from .eventData import Danmu, Event, Gift, SuperChat, User
+from .eventData import Danmu, Event, Gift, OptExcInfo, SuperChat, User
 
 
 class BilibiliLiveEventHandler:
@@ -51,10 +50,10 @@ class BilibiliLiveEventHandler:
     def onSuperChat(self, event: Event[SuperChat]):
         """收到醒目留言，包括日语留言"""
 
-    def onUnpackException(self, event: Event[BilibiliProtoException]):
+    def onUnpackException(self, event: Event[OptExcInfo]):
         """解包消息过程出现异常"""
 
-    def onException(self, exception: Exception):
+    def onException(self, exceptionInfo: OptExcInfo):
         """出现异常。其他事件或内部抛出异常将触发，此方法抛出异常将被忽略"""
 
     def onNotProcessPackage(self, event: Event[None]):
