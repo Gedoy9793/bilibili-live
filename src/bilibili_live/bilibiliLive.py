@@ -16,6 +16,10 @@ from .proto.proto import BilibiliLivePackage, BilibiliProto, BilibiliProtoExcept
 
 _bilibiliLive = {}
 
+import logging
+
+logger = logging.getLogger("bilibili-live")
+
 
 class BilibiliLive:
     connected: asyncio.Event
@@ -104,10 +108,14 @@ class BilibiliLive:
                 continue
             try:
                 self.host = api.getBestHost(self.danmu_info.host_list)
+                logger.info(f"connecting to {self.host}")
                 self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
                 await self._auth()
                 self.connected.set()
+                logger.info(f"connected to {self.host}")
             except ConnectionRefusedError:
+                api.decuteHostScore(self.host)
+                logger.error("connection refused, reconnecting")
                 await asyncio.sleep(1)
 
     async def _auth(self):
@@ -124,15 +132,18 @@ class BilibiliLive:
         )
         auth_proto.op = BilibiliProto.OP_AUTH
         await self.websocket.send(auth_proto.pack())
+        logger.info("send auth package")
 
     async def _heart(self):
         while True:
             try:
                 await self.connected.wait()
                 await self.websocket.send(BilibiliProto().pack())
+                logger.info("send heart package")
                 self.package_queue.put("heart")
                 await asyncio.sleep(self.heart_time)
             except websockets.exceptions.ConnectionClosedError:
+                logger.error("connection closed at heart, reconnecting")
                 api.decuteHostScore(self.host)
                 await asyncio.sleep(1)
                 self.connected.clear()
@@ -150,6 +161,7 @@ class BilibiliLive:
             except websockets.exceptions.ConnectionClosedError:
                 api.decuteHostScore(self.host)
                 self.connected.clear()
+                logger.error("connection closed at recv, reconnecting")
             except BilibiliProtoException:
                 self.package_queue.put(Event(package, data=sys.exc_info()))
             except PackageConvertException:
