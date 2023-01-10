@@ -11,9 +11,10 @@ from .events import Event
 from .events.handler import BilibiliLiveEventHandler
 from .packageProcess.exceptions import PackageConvertException
 from .packageProcess.packageProcessor import PackageProcessor
-from .proto.proto import BilibiliProto, BilibiliProtoException
+from .proto.proto import BilibiliLivePackage, BilibiliProto, BilibiliProtoException
 
 _bilibiliLive = {}
+
 
 class BilibiliLive:
     connected: asyncio.Event
@@ -21,7 +22,7 @@ class BilibiliLive:
 
     package_queue: Queue
 
-    def __new__(cls, name='defaule'):
+    def __new__(cls, name="defaule"):
         if name in _bilibiliLive:
             return _bilibiliLive[name]
         else:
@@ -35,13 +36,26 @@ class BilibiliLive:
                 while True:
                     package = self.package_queue.get()
                     try:
-                        self.handler.onPackage(Event(package=package))
-                        self.processor.process(package)
-                    except BilibiliProtoException as e:
-                        self.handler.onUnpackException(Event(package=package, data=e))
-                        self.handler.onException(e)
+                        if isinstance(package, BilibiliLivePackage):
+                            try:
+                                self.handler.onPackage(Event(package=package))
+                                self.processor.process(package)
+                            except BilibiliProtoException as e:
+                                self.package_queue.put(Event(package=package, data=e))
+                            except Exception as e:
+                                self.package_queue.put(e)
+                        elif isinstance(package, Event):
+                            self.handler.onUnpackException(package)
+                        elif package == "heart":
+                            self.handler.onHeart()
                     except Exception as e:
-                        self.handler.onException(e)
+                        self.package_queue.put(e)
+
+                    try:
+                        if isinstance(package, Exception):
+                            self.handler.onException(package)
+                    except Exception:
+                        ...
 
             handle_thread = Thread(target=handle_thread_run)
             handle_thread.setDaemon(True)
@@ -50,14 +64,14 @@ class BilibiliLive:
             self.connected = asyncio.Event(loop=self.loop)
             self.stop_sig = asyncio.Event(loop=self.loop)
             self.package_queue = Queue()
-            
+
             handle_thread.start()
             self.loop.run_until_complete(self._start())
 
         self.live_thread = Thread(target=live_thread_run)
         self.live_thread.setDaemon(True)
 
-    def schedule(self, handler, short_id, heart_time = 30):
+    def schedule(self, handler, short_id, heart_time=30):
         self.handler: BilibiliLiveEventHandler = handler(self)
         self.processor: PackageProcessor = PackageProcessor(self.handler)
 
@@ -78,16 +92,19 @@ class BilibiliLive:
         await self.stop_sig.wait()
 
     async def _start(self):
-        await self._connect()
-        await asyncio.wait([self._heart(), self._recv(), self._check_stop()], return_when=asyncio.FIRST_COMPLETED)
+        await asyncio.wait(
+            [self._connect(), self._heart(), self._recv(), self._check_stop()], return_when=asyncio.FIRST_COMPLETED
+        )
 
     async def _connect(self):
         while True:
+            if self.connected.is_set():
+                await asyncio.sleep(1)
+                continue
             try:
                 self.websocket = await websockets.connect(f"wss://{self.host.host}:{self.host.wss_port}/sub")
                 await self._auth()
                 self.connected.set()
-                return
             except ConnectionRefusedError:
                 await asyncio.sleep(1)
 
@@ -109,11 +126,16 @@ class BilibiliLive:
     async def _heart(self):
         while True:
             try:
+                await self.connected.wait()
                 await self.websocket.send(BilibiliProto().pack())
-                self.handler.onHeart()
+                self.package_queue.put("heart")
                 await asyncio.sleep(self.heart_time)
+            except websockets.exceptions.ConnectionClosedError as e:
+                self.package_queue.put(e)
+                await asyncio.sleep(1)
+                self.connected.clear()
             except Exception as e:
-                self.handler.onException(e)
+                self.package_queue.put(e)
 
     async def _recv(self):
         while True:
@@ -123,14 +145,13 @@ class BilibiliLive:
                 packages = BilibiliProto.unpack(recv)
                 for package in packages:
                     self.package_queue.put(package)
-            except websockets.exceptions.ConnectionClosedError:
+            except websockets.exceptions.ConnectionClosedError as e:
+                self.package_queue.put(e)
                 self.connected.clear()
-                await self._connect()
             except BilibiliProtoException as e:
-                self.handler.onException(e)
-                self.handler.onUnpackException(Event(package, data=e))
+                self.package_queue.put(Event(package, data=e))
             except PackageConvertException as e:
-                self.handler.onUnpackException(Event(package, data=e))
+                self.package_queue.put(Event(package, data=e))
             except Exception as e:
-                self.handler.onException(e)
+                self.package_queue.put(e)
                 ...
