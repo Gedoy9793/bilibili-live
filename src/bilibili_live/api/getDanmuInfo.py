@@ -21,7 +21,7 @@ def getDanmuServerInfo(room_id: int):
 
 
 def getBestHost(host_list: List[HostInfo]):
-    return sorted(host_list, key=lambda host: host.score)[0]
+    return sorted(host_list, key=lambda host: host.score, reverse=True)[0]
 
 
 def decuteHostScore(host: HostInfo):
