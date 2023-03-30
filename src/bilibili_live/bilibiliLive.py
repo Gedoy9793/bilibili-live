@@ -6,7 +6,7 @@ from threading import Thread
 
 import websockets
 
-from bilibili_live import api
+from . import api
 
 from .events import Event, OptExcInfo
 from .events.handler import BilibiliLiveEventHandler
@@ -39,28 +39,26 @@ class BilibiliLive:
         def live_thread_run():
             def handle_thread_run():
                 while True:
-                    package = self.package_queue.get()
+                    ptype, package = self.package_queue.get()
                     try:
-                        if isinstance(package, BilibiliLivePackage):
+                        if ptype == "package":
                             try:
                                 self.handler.onPackage(Event(package=package))
                                 self.processor.process(package)
                             except BilibiliProtoException:
-                                self.package_queue.put(Event(package=package, data=sys.exc_info()))
-                            except Exception:
-                                self.package_queue.put(sys.exc_info())
-                        elif isinstance(package, Event):
+                                self.package_queue.put(("exception_with_package", Event(package=package, data=sys.exc_info())))
+                        elif ptype == "exception_with_package":
                             self.handler.onUnpackException(package)
-                        elif package == "heart":
+                        elif ptype == "heart":
                             self.handler.onHeart()
                     except Exception:
-                        self.package_queue.put(sys.exc_info())
+                        self.package_queue.put(("exception", sys.exc_info()))
 
                     try:
-                        if isinstance(package, OptExcInfo):
+                        if ptype == "exception":
                             self.handler.onException(package)
-                    except Exception:
-                        ...
+                    except Exception as e:
+                        logger.error(f"error when handle another error: {e}")
 
             handle_thread = Thread(target=handle_thread_run)
             handle_thread.setDaemon(True)
@@ -140,7 +138,7 @@ class BilibiliLive:
                 await self.connected.wait()
                 await self.websocket.send(BilibiliProto().pack())
                 logger.info("send heart package")
-                self.package_queue.put("heart")
+                self.package_queue.put(("heart", None))
                 await asyncio.sleep(self.heart_time)
             except websockets.exceptions.ConnectionClosedError:
                 logger.error("connection closed at heart, reconnecting")
@@ -148,7 +146,7 @@ class BilibiliLive:
                 await asyncio.sleep(1)
                 self.connected.clear()
             except Exception:
-                self.package_queue.put(sys.exc_info())
+                self.package_queue.put(("exception", sys.exc_info()))
 
     async def _recv(self):
         while True:
@@ -157,15 +155,15 @@ class BilibiliLive:
                 recv = await self.websocket.recv()
                 packages = BilibiliProto.unpack(recv)
                 for package in packages:
-                    self.package_queue.put(package)
+                    self.package_queue.put(("package", package))
             except websockets.exceptions.ConnectionClosedError:
                 api.decuteHostScore(self.host)
                 self.connected.clear()
                 logger.error("connection closed at recv, reconnecting")
             except BilibiliProtoException:
-                self.package_queue.put(Event(package, data=sys.exc_info()))
+                self.package_queue.put(("exception_with_package", Event(package, data=sys.exc_info())))
             except PackageConvertException:
-                self.package_queue.put(Event(package, data=sys.exc_info()))
+                self.package_queue.put(("exception_with_package", Event(package, data=sys.exc_info())))
             except Exception:
-                self.package_queue.put(sys.exc_info())
+                self.package_queue.put(("exception", sys.exc_info()))
                 ...
