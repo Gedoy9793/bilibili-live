@@ -1,4 +1,9 @@
+import logging
+import traceback
+
 from .eventData import Danmu, Event, Gift, OptExcInfo, SuperChat, User
+
+logger = logging.getLogger("bilibili-live")
 
 
 class BilibiliLiveEventHandler:
@@ -53,8 +58,9 @@ class BilibiliLiveEventHandler:
     def onUnpackException(self, event: Event[OptExcInfo]):
         """解包消息过程出现异常"""
 
-    def onException(self, exceptionInfo: OptExcInfo):
+    def onException(self, exception_info: OptExcInfo):
         """出现异常。其他事件或内部抛出异常将触发，此方法抛出异常将被忽略"""
+        logging.error(f"unknown error: {traceback.format_exception(*exception_info)}")
 
     def onNotProcessPackage(self, event: Event[None]):
         """未处理的包"""

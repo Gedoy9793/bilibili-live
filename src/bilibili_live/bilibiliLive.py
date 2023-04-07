@@ -1,6 +1,7 @@
 import asyncio
 import json
 import sys
+import logging
 from queue import Queue
 from threading import Thread
 
@@ -8,15 +9,14 @@ import websockets
 
 from . import api
 
-from .events import Event, OptExcInfo
+from .events import Event
 from .events.handler import BilibiliLiveEventHandler
 from .packageProcess.exceptions import PackageConvertException
 from .packageProcess.packageProcessor import PackageProcessor
-from .proto.proto import BilibiliLivePackage, BilibiliProto, BilibiliProtoException
+from .proto.proto import BilibiliProto, BilibiliProtoException
 
 _bilibiliLive = {}
 
-import logging
 
 logger = logging.getLogger("bilibili-live")
 
@@ -46,7 +46,8 @@ class BilibiliLive:
                                 self.handler.onPackage(Event(package=package))
                                 self.processor.process(package)
                             except BilibiliProtoException:
-                                self.package_queue.put(("exception_with_package", Event(package=package, data=sys.exc_info())))
+                                self.package_queue.put(
+                                    ("exception_with_package", Event(package=package, data=sys.exc_info())))
                         elif ptype == "exception_with_package":
                             self.handler.onUnpackException(package)
                         elif ptype == "heart":
@@ -115,6 +116,8 @@ class BilibiliLive:
                 api.decuteHostScore(self.host)
                 logger.error("connection refused, reconnecting")
                 await asyncio.sleep(1)
+            except Exception:
+                self.package_queue.put(("exception", sys.exc_info()))
 
     async def _auth(self):
         auth_proto = BilibiliProto()
@@ -166,4 +169,3 @@ class BilibiliLive:
                 self.package_queue.put(("exception_with_package", Event(package, data=sys.exc_info())))
             except Exception:
                 self.package_queue.put(("exception", sys.exc_info()))
-                ...
