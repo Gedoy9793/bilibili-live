@@ -123,7 +123,7 @@ class BilibiliLive:
         auth_proto = BilibiliProto()
         auth_proto.body = json.dumps(
             {
-                "uid": 0,
+                "uid": self.room_info.room_owner_uid or 0,
                 "roomid": self.room_info.room_id,
                 "protover": 3,
                 "platform": "web",

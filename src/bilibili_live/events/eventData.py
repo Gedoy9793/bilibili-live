@@ -84,6 +84,7 @@ class Room:
 class RoomInfo:
     room_id: int
     short_id: int
+    room_owner_uid: int
     title: str
     cover_image: str  # 封面
     area_id: int
